@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
 using Windows.Storage.Pickers;
+using Windows.Management.Deployment;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -39,7 +40,7 @@ namespace Version_Alert
         public string targetExecutable = string.Empty;
         public playsetData(string name, List<Package> selected, string exec)
         {
-            packagesPath = name;
+            playsetName = name;
             this.selected = selected;
             targetExecutable = exec;
         }
@@ -132,7 +133,12 @@ namespace Version_Alert
             {
                 playsetNameTemp = "NewPlayset" + DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
             }
-            
+            else
+            {
+                playsetName = playsetNameTemp;
+            }
+            Debug.WriteLine(playsetName);
+            Debug.WriteLine(playsetNameTemp);
             playsetData playsetData = new(this.playsetNameTemp, this.selected, this.targetExecutable);
 
             var json = JsonConvert.SerializeObject(playsetData);
@@ -320,6 +326,7 @@ namespace Version_Alert
             }
 
             string TargetExecutablePath = Path.Combine(MainWindow.playgroundPath, targetExecutable);
+            PlaySet_Save(sender, e);
 
             Debug.WriteLine(TargetExecutablePath);
 
@@ -342,7 +349,6 @@ namespace Version_Alert
                     Debug.WriteLine($"Æô¶¯Ê§°Ü: {ex.Message}");
                 }
             }
-            PlaySet_Save(sender, e);
             return;
         }
 
