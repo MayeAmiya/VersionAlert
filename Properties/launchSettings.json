@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "VersionAlert (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "VersionAlert (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
