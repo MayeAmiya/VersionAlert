@@ -62,12 +62,14 @@ namespace Version_Alert
             try
             {
                 initPath = File.ReadAllText(iniFilePath);
-                if(!Directory.Exists(iniFilePath))
+                if(!Directory.Exists(initPath))
                 {
                     await SaveInitPathToIni();
+                    return;
                 }
                 Debug.WriteLine($"initPath loaded from {iniFilePath}");
             }
+
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to load initPath from {iniFilePath}: {ex.Message}");
@@ -83,6 +85,7 @@ namespace Version_Alert
             else
             {
                 GetInitPathFromIni();
+                return;
             }
         }
 

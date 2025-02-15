@@ -94,5 +94,10 @@ namespace Version_Alert
             // 检查 PackageFolders 字典中是否包含指定的 packageName
             return Packages.ContainsKey(packageName);
         }
+
+        static public string PackagePath(string packageName)
+        {
+            return Packages[packageName].Path;
+        }
     }
 }

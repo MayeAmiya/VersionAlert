@@ -105,6 +105,7 @@ namespace Version_Alert
                         if (PackageFinder.PackageExists(tempPackage.Version))
                         {
                             tempPackage.exist = true;
+                            tempPackage.Path = PackageFinder.PackagePath(tempPackage.Version);
                         }
                         else
                         {
@@ -123,14 +124,19 @@ namespace Version_Alert
         {
             // 序列化 packages 列表
             // 读取 JSON 文件
-            if (playsetNameTemp == null || targetExecutable == null)
+            if (targetExecutable == null)
             {
                 return;
             }
+            if (playsetNameTemp == null)
+            {
+                playsetNameTemp = "NewPlayset" + DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
+            }
             
             playsetData playsetData = new(this.playsetNameTemp, this.selected, this.targetExecutable);
-            var json = JsonConvert.SerializeObject(playsetData);
 
+            var json = JsonConvert.SerializeObject(playsetData);
+            Debug.WriteLine(json);
             // 保存 JSON 文件
 
             if (MainWindow.playsetsPath == null || playsetNameTemp == null)
@@ -232,6 +238,10 @@ namespace Version_Alert
             foreach (var package in selected)
             {
                 // 打印 package 的 Path  
+                if(package.exist == false)
+                {
+                    return;
+                }
                 Version_Alert.HardLink.CreateHardLinks(package.Path, MainWindow.playgroundPath);
 
                 // 在 playground 中查找并删除 package.remove 中的文件  
@@ -245,12 +255,21 @@ namespace Version_Alert
                 }
             }
             // 为 playset 创建硬链接
-            Version_Alert.HardLink.CreateHardLinks(MainWindow.playsetsPath, MainWindow.playgroundPath);
-            
+            if (playsetName == null)
+            {
+                return;
+            }
+            var playsetsfilePath = Path.Combine(MainWindow.playsetsPath,playsetName);
+            Version_Alert.HardLink.CreateHardLinks(playsetsfilePath, MainWindow.playgroundPath);
         }
 
         public async void PlaySet_Game(object sender, RoutedEventArgs e)
         {
+            await Game_Choose();
+        }
+        public async Task<bool> Game_Choose()
+        {
+            Debug.WriteLine("choosegame");
             var openPicker = new Windows.Storage.Pickers.FileOpenPicker();
 
             // 获取当前应用的窗口
@@ -258,7 +277,7 @@ namespace Version_Alert
 
             if (window == null)
             {
-                return;
+                return false;
             }
 
             // Retrieve the window handle (HWND) of the current WinUI 3 window.
@@ -273,24 +292,29 @@ namespace Version_Alert
 
             // Open the picker for the user to pick a file
             var file = await openPicker.PickSingleFileAsync();
+            Debug.WriteLine("choosegame");
             Debug.WriteLine(file.Name);
             if(file == null)
             {
-                return;
+                return false;
             }
             // 获取文件名（不包含前缀路径）
             targetExecutable = file.Name;
+            return true;
         }
 
-        public void PlaySet_Start(object sender, RoutedEventArgs e)
+        public async void PlaySet_Start(object sender, RoutedEventArgs e)
         {
             PlaySet_Clear(sender, e);
             PlaySet_Init(sender, e);
+
             if (MainWindow.playgroundPath == null)
             {
+
                 return;
             }
-            if (targetExecutable == null)
+
+            if (await Game_Choose() == false || targetExecutable == null)
             {
                 return;
             }
@@ -318,6 +342,7 @@ namespace Version_Alert
                     Debug.WriteLine($"启动失败: {ex.Message}");
                 }
             }
+            PlaySet_Save(sender, e);
             return;
         }
 
